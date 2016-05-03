@@ -11,3 +11,4 @@ How to Use:
 2. Right click on the Resource (*.resx) or TextTemplate (*.tt) file then click properties. 
 3. In the properties, set the property "RunCustomToolOnBuild" to true. 
 4. Build the project/solution. 
+
