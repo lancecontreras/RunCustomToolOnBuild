@@ -3,10 +3,25 @@
 	<Metadata>
 		<Identity Id="RunCustomToolOnBuild.Lawrence Contreras.a48499ce-ff8d-4bc1-bc4a-3dfb59e85367" Version="1.0" Language="en-US" Publisher="Lawrence Contreras" />
 		<DisplayName>RunCustomToolOnBuild</DisplayName>
-		<Description xml:space="preserve">Run all Custom tools for all .resx file  when building the project. </Description>
+		<Description xml:space="preserve">RunCustomtoolOnBuild is a visual studio extension that tries to run the custom tools associated to project files on build. 
+
+How to use: 
+1. Install the vsix extension. 
+2. Open Visual studio and open your project/solution. 
+3. Right click on a resource (resx) or TextTemplate (tt) file, click on properties. 
+4. Set the property "RunCustomToolOnBuild" to true then build the project. 
+5. Notice that the resource or text template files regenerates the output. </Description>
+		<MoreInfo>https://xamltips.wordpress.com/2016/05/03/run-custom-tool-on-build-for-visual-studio-2015/</MoreInfo>
+		<GettingStartedGuide>index.html</GettingStartedGuide>
+		<ReleaseNotes>index.html</ReleaseNotes>
+		<Icon>Resources\RunCustomToolPackage.ico</Icon>
+		<PreviewImage>Resources\RunCustomToolPackage.ico</PreviewImage>
+		<Tags >Run Custom Tools, Custom, Tool, resource, resx, TextTemplate, TT, regenerate, generate</Tags>
 	</Metadata>
 	<Installation>
-		<InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[14.0]" />
+		<InstallationTarget Version="[14.0,15.0)" Id="Microsoft.VisualStudio.Pro" />
+		<InstallationTarget Version="[14.0,15.0)" Id="Microsoft.VisualStudio.Enterprise" />
+		<InstallationTarget Version="[14.0,15.0)" Id="Microsoft.VisualStudio.Community" />
 	</Installation>
 	<Dependencies>
 		<Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />

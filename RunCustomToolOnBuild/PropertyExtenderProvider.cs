@@ -1,6 +1,7 @@
 ﻿using EnvDTE;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 
 
@@ -35,7 +36,10 @@ namespace RunCustomToolOnBuild
 			if (projectHierarchy.ParseCanonicalName(fullPath, out itemId) != 0)
 				return null;
 
-			return new PropertyExtender((IVsBuildPropertyStorage)projectHierarchy, itemId, extenderSite, cookie);
+			if (Path.GetExtension(fullPath).Equals(".resx", StringComparison.InvariantCultureIgnoreCase) || Path.GetExtension(fullPath).Equals(".tt", StringComparison.InvariantCultureIgnoreCase))
+				return new PropertyExtender((IVsBuildPropertyStorage)projectHierarchy, itemId, extenderSite, cookie);
+
+			return null;
 		}
 
 		public bool CanExtend(string extenderCATID, string extenderName, object extendeeObject)
