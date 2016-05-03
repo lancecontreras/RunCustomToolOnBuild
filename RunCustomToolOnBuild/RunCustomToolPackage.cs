@@ -88,9 +88,9 @@ namespace RunCustomToolOnBuild
 
 		}
 
-		private async void BuildEvents_OnBuildBegin(vsBuildScope Scope, vsBuildAction Action)
+		private void BuildEvents_OnBuildBegin(vsBuildScope Scope, vsBuildAction Action)
 		{
-			await System.Threading.Tasks.Task.Run(() =>
+			try
 			{
 				foreach (Project project in _dte.Solution.Projects)
 				{
@@ -99,7 +99,11 @@ namespace RunCustomToolOnBuild
 						CheckProjectItems(projectItem);
 					}
 				}
-			});
+			}
+			catch (Exception ex)
+			{
+				LogActivity(ex.ToString());
+			}
 		}
 
 		bool WillRunCustomToolOnBuild(ProjectItem projectItem)
@@ -108,7 +112,7 @@ namespace RunCustomToolOnBuild
 			IVsHierarchy project;
 			solution.GetProjectOfUniqueName(projectItem.ContainingProject.UniqueName, out project);
 			string docFullPath = (string)GetPropertyValue(projectItem, "FullPath");
-
+			if (docFullPath == null) return false;
 			string customTool = GetPropertyValue(projectItem, "CustomTool") as string;
 			if (customTool == "RunCustomToolOnBuild")
 			{
@@ -150,7 +154,7 @@ namespace RunCustomToolOnBuild
 				CheckProjectItem(projectItem);
 				return;
 			}
-			if (projectItem.ProjectItems.Count > 0)
+			if (projectItem.ProjectItems != null && projectItem.ProjectItems.Count > 0)
 			{
 				foreach (ProjectItem innerProjectItem in projectItem.ProjectItems)
 				{
@@ -171,7 +175,11 @@ namespace RunCustomToolOnBuild
 			solution.GetProjectOfUniqueName(projectItem.ContainingProject.UniqueName, out project);
 			try
 			{
-				LogActivity("Running Custom tool on {0}", projectItem.Name);
+				string docFullPath = (string)GetPropertyValue(projectItem, "FullPath");
+				if (docFullPath == null)
+					docFullPath = projectItem.Name;
+
+				LogActivity("Running Custom tool on {0}", docFullPath);
 				VSLangProj.VSProjectItem vsProjectItem = projectItem.Object as VSLangProj.VSProjectItem;
 				vsProjectItem.RunCustomTool();
 			}
@@ -231,6 +239,9 @@ namespace RunCustomToolOnBuild
 		{
 			try
 			{
+				if (item == null || item.Properties == null)
+					return null;
+
 				var prop = item.Properties.Item(index);
 				if (prop != null)
 					return prop.Value;
