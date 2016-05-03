@@ -44,6 +44,18 @@ namespace RunCustomToolOnBuild
 
 		public bool CanExtend(string extenderCATID, string extenderName, object extendeeObject)
 		{
+			dynamic extendee = extendeeObject;
+			string fullPath = extendee.FullPath;
+			var projectItem = _dte.Solution.FindProjectItem(fullPath);
+			IVsSolution solution = (IVsSolution)_serviceProvider.GetService(typeof(SVsSolution));
+			IVsHierarchy projectHierarchy;
+			if (solution.GetProjectOfUniqueName(projectItem.ContainingProject.UniqueName, out projectHierarchy) != 0)
+				return false;
+			uint itemId;
+			if (projectHierarchy.ParseCanonicalName(fullPath, out itemId) != 0)
+				return false;
+			if (!Path.GetExtension(fullPath).Equals(".resx", StringComparison.InvariantCultureIgnoreCase) && !Path.GetExtension(fullPath).Equals(".tt", StringComparison.InvariantCultureIgnoreCase))
+				return false; 
 			return true;
 		}
 	}
