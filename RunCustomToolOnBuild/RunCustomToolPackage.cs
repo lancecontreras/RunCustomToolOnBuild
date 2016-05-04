@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -46,7 +47,7 @@ namespace RunCustomToolOnBuild
 		private OutputWindowPane _outputPane;
 		private ErrorListProvider _errorListProvider;
 		private readonly Dictionary<int, IExtenderProvider> _registerExtenderProviders = new Dictionary<int, IExtenderProvider>();
-		public const string TargetsPropertyName = "RunCustomToolOn";
+		public const string TargetsPropertyName = "RunCustomToolOnBuild";
 
 		protected override void Initialize()
 		{
@@ -85,18 +86,24 @@ namespace RunCustomToolOnBuild
 		{
 			int cookie = _dte.ObjectExtenders.RegisterExtenderProvider(extenderCatId, name, extenderProvider);
 			_registerExtenderProviders.Add(cookie, extenderProvider);
-
 		}
 
 		private void BuildEvents_OnBuildBegin(vsBuildScope Scope, vsBuildAction Action)
 		{
 			try
 			{
-				foreach (Project project in _dte.Solution.Projects)
+				if (Scope == vsBuildScope.vsBuildScopeProject)
 				{
-					foreach (ProjectItem projectItem in project.ProjectItems)
-					{
+					Project currentProject = GetCurrentProject();
+					foreach (ProjectItem projectItem in currentProject.ProjectItems)
 						CheckProjectItems(projectItem);
+				}
+				else
+				{
+					foreach (Project project in _dte.Solution.Projects)
+					{
+						foreach (ProjectItem projectItem in project.ProjectItems)
+							CheckProjectItems(projectItem);
 					}
 				}
 			}
@@ -105,7 +112,37 @@ namespace RunCustomToolOnBuild
 				LogActivity(ex.ToString());
 			}
 		}
+		Project GetCurrentProject()
+		{
+			IntPtr hierarchyPointer, selectionContainerPointer;
+			Object selectedObject = null;
+			IVsMultiItemSelect multiItemSelect;
+			uint projectItemId;
 
+			IVsMonitorSelection monitorSelection =
+							(IVsMonitorSelection)Package.GetGlobalService(
+							typeof(SVsShellMonitorSelection));
+
+			monitorSelection.GetCurrentSelection(out hierarchyPointer,
+																					 out projectItemId,
+																					 out multiItemSelect,
+																					 out selectionContainerPointer);
+
+			IVsHierarchy selectedHierarchy = Marshal.GetTypedObjectForIUnknown(
+																					 hierarchyPointer,
+																					 typeof(IVsHierarchy)) as IVsHierarchy;
+
+			if (selectedHierarchy != null)
+			{
+				ErrorHandler.ThrowOnFailure(selectedHierarchy.GetProperty(
+																					projectItemId,
+																					(int)__VSHPROPID.VSHPROPID_ExtObject,
+																					out selectedObject));
+			}
+
+			Project selectedProject = selectedObject as Project;
+			return selectedProject;
+		}
 		bool WillRunCustomToolOnBuild(ProjectItem projectItem)
 		{
 			IVsSolution solution = (IVsSolution)GetGlobalService(typeof(SVsSolution));
@@ -114,17 +151,7 @@ namespace RunCustomToolOnBuild
 			string docFullPath = (string)GetPropertyValue(projectItem, "FullPath");
 			if (docFullPath == null) return false;
 			string customTool = GetPropertyValue(projectItem, "CustomTool") as string;
-			if (customTool == "RunCustomToolOnBuild")
-			{
-				string targetName = GetPropertyValue(projectItem, "CustomToolNamespace") as string;
-				if (string.IsNullOrEmpty(targetName))
-				{
-					LogError(project, projectItem.Name, "The target file is not specified. Enter its relative path in the 'Custom tool namespace' property");
-					return false;
-				}
-				return false;
-			}
-			else
+			if (customTool != null && customTool != string.Empty)
 			{
 				IVsBuildPropertyStorage storage = project as IVsBuildPropertyStorage;
 				if (storage == null)
@@ -134,24 +161,25 @@ namespace RunCustomToolOnBuild
 				if (project.ParseCanonicalName(docFullPath, out itemId) != 0)
 					return false;
 
-				string runCustomToolOn;
-				if (storage.GetItemAttribute(itemId, TargetsPropertyName, out runCustomToolOn) != 0)
+				string runCustomToolOnBuildPropertyValue;
+				if (storage.GetItemAttribute(itemId, TargetsPropertyName, out runCustomToolOnBuildPropertyValue) != 0)
 					return false;
 
-				if (runCustomToolOn == null)
+				if (runCustomToolOnBuildPropertyValue == null)
 					return false;
 
 				bool returnValue;
-				if (bool.TryParse(runCustomToolOn, out returnValue))
+				if (bool.TryParse(runCustomToolOnBuildPropertyValue, out returnValue))
 					return returnValue;
 				return false;
 			}
+			return false;
 		}
 		void CheckProjectItems(ProjectItem projectItem)
 		{
 			if (WillRunCustomToolOnBuild(projectItem))
 			{
-				CheckProjectItem(projectItem);
+				RunCustomTool(projectItem);
 				return;
 			}
 			if (projectItem.ProjectItems != null && projectItem.ProjectItems.Count > 0)
@@ -161,11 +189,6 @@ namespace RunCustomToolOnBuild
 					CheckProjectItems(innerProjectItem);
 				}
 			}
-		}
-
-		void CheckProjectItem(ProjectItem projectItem)
-		{
-			RunCustomTool(projectItem);
 		}
 
 		void RunCustomTool(ProjectItem projectItem)
@@ -191,7 +214,7 @@ namespace RunCustomToolOnBuild
 
 		private void LogActivity(string format, params object[] args)
 		{
-			string prefix = $"[RunCustomToolOnBuild Log] {format}";
+			string prefix = $"[{DateTime.Now.ToString("M/d/y h:mm:ss.FFF", CultureInfo.InvariantCulture)}] {format}";
 			_outputPane.Activate();
 			_outputPane.OutputString(string.Format(prefix, args) + Environment.NewLine);
 		}
@@ -214,7 +237,7 @@ namespace RunCustomToolOnBuild
 			{
 				Category = TaskCategory.BuildCompile,
 				ErrorCategory = errorCategory,
-				Text = "[RunCustomToolOnBuild Error]: " + text,
+				Text = $" {DateTime.Now.ToString("M/d/y h:mm:ss.FFF", CultureInfo.InvariantCulture)}] {text}",
 				Document = document,
 				HierarchyItem = project,
 				Line = -1,
@@ -225,15 +248,14 @@ namespace RunCustomToolOnBuild
 			switch (errorCategory)
 			{
 				case TaskErrorCategory.Error:
-					prefix = "Error: ";
+					prefix = "[!";
 					break;
 				case TaskErrorCategory.Warning:
-					prefix = "Warning: ";
+					prefix = "[*: ";
 					break;
 			}
 			_outputPane.OutputString(prefix + text + Environment.NewLine);
 		}
-
 
 		private static object GetPropertyValue(ProjectItem item, object index)
 		{

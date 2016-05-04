@@ -37,8 +37,8 @@ namespace RunCustomToolOnBuild
 			}
 		}
 
-		[Category("RunCustomToolOnBuild")]
-		[DisplayName("RunCustomToolOnBuild")]
+		[Category("Run Custom Tool")]
+		[DisplayName("Run Custom Tool On Build")]
 		[Description("If true, the custom tool for the selected file will run on build.")]
 		[Editor("System.ComponentModel.Design.BinaryEditor, System.Design, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a", typeof(UITypeEditor))]
 		public bool RunCustomTool
