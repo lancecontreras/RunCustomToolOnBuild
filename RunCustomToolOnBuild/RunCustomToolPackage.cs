@@ -95,15 +95,33 @@ namespace RunCustomToolOnBuild
 				if (Scope == vsBuildScope.vsBuildScopeProject)
 				{
 					Project currentProject = GetCurrentProject();
-					foreach (ProjectItem projectItem in currentProject.ProjectItems)
-						CheckProjectItems(projectItem);
+					if (currentProject != null && currentProject.ProjectItems != null)
+					{
+						foreach (ProjectItem projectItem in currentProject.ProjectItems)
+							CheckProjectItems(projectItem);
+					}
+					else
+					{
+						//If there's no selected project, try the whole solution 
+						foreach (Project project in _dte.Solution.Projects)
+						{
+							if (project != null && project.ProjectItems != null)
+							{
+								foreach (ProjectItem projectItem in project.ProjectItems)
+									CheckProjectItems(projectItem);
+							}
+						}
+					}
 				}
 				else
 				{
 					foreach (Project project in _dte.Solution.Projects)
 					{
-						foreach (ProjectItem projectItem in project.ProjectItems)
-							CheckProjectItems(projectItem);
+						if (project != null && project.ProjectItems != null)
+						{
+							foreach (ProjectItem projectItem in project.ProjectItems)
+								CheckProjectItems(projectItem);
+						}
 					}
 				}
 			}
