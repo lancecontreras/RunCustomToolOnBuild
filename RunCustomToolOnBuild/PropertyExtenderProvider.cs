@@ -36,7 +36,7 @@ namespace RunCustomToolOnBuild
 			if (projectHierarchy.ParseCanonicalName(fullPath, out itemId) != 0)
 				return null;
 
-			if (Path.GetExtension(fullPath).Equals(".resx", StringComparison.InvariantCultureIgnoreCase) || Path.GetExtension(fullPath).Equals(".tt", StringComparison.InvariantCultureIgnoreCase)||Path.GetExtension(fullPath.Equals(".resw", StringComparison.InvariantCultureIgnoreCase)))
+			if (Path.GetExtension(fullPath).Equals(".resx", StringComparison.InvariantCultureIgnoreCase) || Path.GetExtension(fullPath).Equals(".resw", StringComparison.InvariantCultureIgnoreCase) || Path.GetExtension(fullPath).Equals(".tt", StringComparison.InvariantCultureIgnoreCase))
 				return new PropertyExtender((IVsBuildPropertyStorage)projectHierarchy, itemId, extenderSite, cookie);
 
 			return null;
@@ -55,7 +55,7 @@ namespace RunCustomToolOnBuild
 			if (projectHierarchy.ParseCanonicalName(fullPath, out itemId) != 0)
 				return false;
 			if (!Path.GetExtension(fullPath).Equals(".resx", StringComparison.InvariantCultureIgnoreCase) && !Path.GetExtension(fullPath).Equals(".tt", StringComparison.InvariantCultureIgnoreCase))
-				return false; 
+				return false;
 			return true;
 		}
 	}
