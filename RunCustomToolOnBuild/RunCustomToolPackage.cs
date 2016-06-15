@@ -64,8 +64,7 @@ namespace RunCustomToolOnBuild
 
 			_outputPane = outputWindow.OutputWindowPanes
 																.Cast<OutputWindowPane>()
-																.FirstOrDefault(p => p.Name == "Build")
-										?? outputWindow.OutputWindowPanes.Add("Build");
+																.FirstOrDefault(p => p.Name.Equals("Build", StringComparison.CurrentCultureIgnoreCase));
 			_errorListProvider = new ErrorListProvider(this)
 			{
 				ProviderName = "RunCustomToolOnBuild",
