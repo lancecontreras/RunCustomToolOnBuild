@@ -5,8 +5,8 @@
 		<DisplayName>RunCustomToolOnBuild</DisplayName>
 		<Description xml:space="preserve">RunCustomtoolOnBuild is a visual studio extension that tries to run the custom tools of project files on build. 
 </Description>
-		<MoreInfo>https://xamltips.wordpress.com/2016/05/03/run-custom-tool-on-build-for-visual-studio-2015/</MoreInfo>
-		<GettingStartedGuide>https://xamltips.wordpress.com/2016/05/03/run-custom-tool-on-build-for-visual-studio-2015/</GettingStartedGuide>
+		<MoreInfo>https://visualstudiogallery.msdn.microsoft.com/958438fc-b1ee-4927-9d37-29d3a33200e0</MoreInfo>
+		<GettingStartedGuide>https://visualstudiogallery.msdn.microsoft.com/958438fc-b1ee-4927-9d37-29d3a33200e0</GettingStartedGuide>
 		<ReleaseNotes>https://visualstudiogallery.msdn.microsoft.com/958438fc-b1ee-4927-9d37-29d3a33200e0</ReleaseNotes>
 		<Icon>Resources\RunCustomToolPackage.ico</Icon>
 		<PreviewImage>Resources\RunCustomToolPackage.ico</PreviewImage>
