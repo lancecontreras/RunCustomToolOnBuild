@@ -54,7 +54,7 @@ namespace RunCustomToolOnBuild
 			uint itemId;
 			if (projectHierarchy.ParseCanonicalName(fullPath, out itemId) != 0)
 				return false;
-			if (!Path.GetExtension(fullPath).Equals(".resx", StringComparison.InvariantCultureIgnoreCase) && !Path.GetExtension(fullPath).Equals(".tt", StringComparison.InvariantCultureIgnoreCase))
+			if (!Path.GetExtension(fullPath).Equals(".resx", StringComparison.InvariantCultureIgnoreCase) && !Path.GetExtension(fullPath).Equals(".resw", StringComparison.InvariantCultureIgnoreCase) && !Path.GetExtension(fullPath).Equals(".tt", StringComparison.InvariantCultureIgnoreCase))
 				return false;
 			return true;
 		}
