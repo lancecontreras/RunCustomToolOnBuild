@@ -64,8 +64,8 @@ namespace RunCustomToolOnBuild
 
 			_outputPane = outputWindow.OutputWindowPanes
 																.Cast<OutputWindowPane>()
-																.FirstOrDefault(p => p.Name == "RunCustomToolOnBuild")
-										?? outputWindow.OutputWindowPanes.Add("RunCustomToolOnBuild");
+																.FirstOrDefault(p => p.Name == "Build")
+										?? outputWindow.OutputWindowPanes.Add("Build");
 			_errorListProvider = new ErrorListProvider(this)
 			{
 				ProviderName = "RunCustomToolOnBuild",
@@ -220,7 +220,7 @@ namespace RunCustomToolOnBuild
 				if (docFullPath == null)
 					docFullPath = projectItem.Name;
 
-				LogActivity("Running Custom tool on {0}", docFullPath);
+				LogActivity("{0}", docFullPath);
 				VSLangProj.VSProjectItem vsProjectItem = projectItem.Object as VSLangProj.VSProjectItem;
 				vsProjectItem.RunCustomTool();
 			}
@@ -232,7 +232,7 @@ namespace RunCustomToolOnBuild
 
 		private void LogActivity(string format, params object[] args)
 		{
-			string prefix = $"[{DateTime.Now.ToString("M/d/y h:mm:ss.FFF", CultureInfo.InvariantCulture)}] {format}";
+			string prefix = $"[{DateTime.Now.ToString("M/d/y h:mm:ss.FFF", CultureInfo.InvariantCulture)} RunCustomToolOnBuild] {format}";
 			_outputPane.Activate();
 			_outputPane.OutputString(string.Format(prefix, args) + Environment.NewLine);
 		}
