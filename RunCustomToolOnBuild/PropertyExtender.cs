@@ -53,34 +53,6 @@ namespace RunCustomToolOnBuild
       }
     }
 
-    [Category("Run Custom Tool")]
-    [DisplayName("Last Built for")]
-    [Description("Last built for solution. Will not run the tool if on the same solution. We don't want to run it over and over again if it's updated.")]
-    [Editor("System.ComponentModel.Design.BinaryEditor, System.Design, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a", typeof(UITypeEditor))]
-    public string LastBuiltOnSolution
-    {
-      get
-      {
-        return getLastBuiltOn();
-      }
-      set
-      {
-        setLastBuiltOn(value);
-      }
-    }
-
-    private string getLastBuiltOn()
-    {
-      string s;
-      _storage.GetItemAttribute(_itemId, RunCustomToolPackage.LastBuiltOnPropertyName, out s);
-      return s;
-    }
-
-    private void setLastBuiltOn(string lastBuiltOn)
-    {
-      _storage.SetItemAttribute(_itemId, RunCustomToolPackage.LastBuiltOnPropertyName, lastBuiltOn);
-    }
-
     private bool LoadRunCustomToolOn()
     {
       string s;

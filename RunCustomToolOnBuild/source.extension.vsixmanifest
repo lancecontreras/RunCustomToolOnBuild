@@ -1,9 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="RunCustomToolOnBuild.Lawrence Contreras.a48499ce-ff8d-4bc1-bc4a-3dfb59e85367" Version="1.4" Language="en-US" Publisher="Lawrence Contreras" />
+    <Identity Id="RunCustomToolOnBuild.Lawrence Contreras.a48499ce-ff8d-4bc1-bc4a-3dfb59e85367" Version="1.5" Language="en-US" Publisher="Lawrence Contreras" />
     <DisplayName>RunCustomToolOnBuild</DisplayName>
-    <Description xml:space="preserve">RunCustomtoolOnBuild is a visual studio extension that tries to run the custom tools of project files on build. 
+    <Description xml:space="preserve">Now compatible with visual Studio 2017 !
+RunCustomtoolOnBuild is a visual studio extension that tries to run the custom tools of project files on build.
 </Description>
     <MoreInfo>https://visualstudiogallery.msdn.microsoft.com/958438fc-b1ee-4927-9d37-29d3a33200e0</MoreInfo>
     <GettingStartedGuide>https://visualstudiogallery.msdn.microsoft.com/958438fc-b1ee-4927-9d37-29d3a33200e0</GettingStartedGuide>
@@ -21,10 +22,13 @@
     <InstallationTarget Version="[15.0,16.0)" Id="Microsoft.VisualStudio.Enterprise" />
   </Installation>
   <Dependencies>
-    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
+    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.6,]" d:InstallSource="Download" Location="https://www.microsoft.com/en-us/download/details.aspx?id=48137" />
     <Dependency Id="Microsoft.VisualStudio.MPF.14.0" DisplayName="Visual Studio MPF 14.0" d:Source="Installed" Version="[14.0]" />
   </Dependencies>
   <Assets>
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
   </Assets>
+  <Prerequisites>
+    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0.26208.0,16.0)" DisplayName="Visual Studio core editor" />
+  </Prerequisites>
 </PackageManifest>

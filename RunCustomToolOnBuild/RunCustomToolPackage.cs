@@ -15,6 +15,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.IO;
 
 namespace RunCustomToolOnBuild
 {
@@ -161,14 +162,17 @@ namespace RunCustomToolOnBuild
       Project selectedProject = selectedObject as Project;
       return selectedProject;
     }
+
+    #region RCT
     bool WillRunCustomToolOnBuild(ProjectItem projectItem)
     {
       IVsSolution solution = (IVsSolution)GetGlobalService(typeof(SVsSolution));
       IVsHierarchy project;
       solution.GetProjectOfUniqueName(projectItem.ContainingProject.UniqueName, out project);
-      string docFullPath = (string)GetPropertyValue(projectItem, "FullPath");
+      string docFullPath = projectItem.GetPath(); 
+
       if (docFullPath == null) return false;
-      string customTool = GetPropertyValue(projectItem, "CustomTool") as string;
+      string customTool = projectItem.GetValue("CustomTool") as string;
       if (customTool != null && customTool != string.Empty)
       {
         IVsBuildPropertyStorage storage = project as IVsBuildPropertyStorage;
@@ -186,27 +190,29 @@ namespace RunCustomToolOnBuild
         if (runCustomToolOnBuildPropertyValue == null)
           return false;
 
-        string lastBuiltOn = null;
-        storage.GetItemAttribute(itemId, LastBuiltOnPropertyName, out lastBuiltOn);
-
-        string solDir, solFile, solOpts;
-        solution.GetSolutionInfo(out solDir, out solFile, out solOpts);
-        if (lastBuiltOn != null)
+        bool runOnBuild;
+        if (bool.TryParse(runCustomToolOnBuildPropertyValue, out runOnBuild) && runOnBuild)
         {
-          if (lastBuiltOn == solFile)
-            return false;
-        }
+          string lastBuiltOn = projectItem.GetLastSolution();          
 
-        bool returnValue;
-        if (bool.TryParse(runCustomToolOnBuildPropertyValue, out returnValue))
-        {
-          if (returnValue)
-            storage.SetItemAttribute(itemId, LastBuiltOnPropertyName, solFile);
+          // Get the solution file name
+          string solDir, solFile, solOpts;
+          solution.GetSolutionInfo(out solDir, out solFile, out solOpts);
 
-          return returnValue;
-        }
+          if (lastBuiltOn == solFile) //in the same solution
+          {
+            if (projectItem.HasChild())
+            {
+              string generatedItemFileName = projectItem.GetGeneratedItem().GetPath();
 
-        return false;
+              // File is not empty and file is updated, it's already generated.
+              if (!ExtensionHelper.IsFileEmpty(generatedItemFileName) && projectItem.IsGeneratedFileUpdated()) return false;
+            }
+          }
+          else
+            projectItem.SetLastSolution(solFile);
+          return runOnBuild;
+        }                    
       }
       return false;
     }
@@ -220,9 +226,7 @@ namespace RunCustomToolOnBuild
       if (projectItem.ProjectItems != null && projectItem.ProjectItems.Count > 0)
       {
         foreach (ProjectItem innerProjectItem in projectItem.ProjectItems)
-        {
           CheckProjectItems(innerProjectItem);
-        }
       }
     }
 
@@ -233,7 +237,7 @@ namespace RunCustomToolOnBuild
       solution.GetProjectOfUniqueName(projectItem.ContainingProject.UniqueName, out project);
       try
       {
-        string docFullPath = (string)GetPropertyValue(projectItem, "FullPath");
+        string docFullPath = projectItem.GetPath();
         if (docFullPath == null)
           docFullPath = projectItem.Name;
 
@@ -246,7 +250,9 @@ namespace RunCustomToolOnBuild
         LogError(project, projectItem.Document.Name, $"Failed to Run Custom Tool on {projectItem.Name}");
       }
     }
+    #endregion 
 
+    #region Log 
     private void LogActivity(string format, params object[] args)
     {
       string prefix = $"[{DateTime.Now.ToString("M/d/y h:mm:ss.FFF", CultureInfo.InvariantCulture)} RunCustomToolOnBuild] {format}";
@@ -291,21 +297,7 @@ namespace RunCustomToolOnBuild
       }
       _outputPane.OutputString(prefix + text + Environment.NewLine);
     }
-
-    private static object GetPropertyValue(ProjectItem item, object index)
-    {
-      try
-      {
-        if (item == null || item.Properties == null)
-          return null;
-
-        var prop = item.Properties.Item(index);
-        if (prop != null)
-          return prop.Value;
-      }
-      catch (ArgumentException) { }
-      return null;
-    }
+    #endregion 
 
   }
 }
