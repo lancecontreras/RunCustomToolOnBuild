@@ -1,4 +1,4 @@
-# ![alt text](https://github.com/lancecontreras/RunCustomToolOnBuild/blob/master/RunTool.png) RunCustomToolOnBuild
+# RunCustomToolOnBuild ![alt text](https://github.com/lancecontreras/RunCustomToolOnBuild/blob/master/RunTool.png)
 This is a visual studio 2015 extension that will allow the custom tool on every project item to run during build so that there's no need to run/save each custom tools manually. This can be very helpful on projects that are using resource(resx) and TextTemplate (tt) files.
 
 I also give credit to [thomaslevesque](https://github.com/thomaslevesque), author of [AutoRunCustomTool](https://github.com/thomaslevesque/AutoRunCustomTool) where I got most of the codes here.
@@ -8,11 +8,8 @@ Background : I created this because I am working on a project that will run in m
 ## How to Use:
 
 1. Install the VSIX in Visual studio.
-
 2. Right click on the Resource (*.resx) or TextTemplate (*.tt) file then click properties.
-
 3. In the properties, set the property "RunCustomToolOnBuild" to true.
-
 4. Build the project/solution.
 
 ## Download from [Visual Studio Gallery](https://marketplace.visualstudio.com/items?itemName=LanceContreras.RunCustomToolOnBuild)
