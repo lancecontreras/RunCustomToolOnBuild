@@ -1,5 +1,5 @@
 # Background
-I created this because I am working on a multiple solution that share the same project that will build multiple platforms, which is .NET 2.0, .NET4 and UWP. This project contains some files that uses custom tool to generate another file. Every platform has their own version of the custom tool and it generates different output. So to prevent me from running the custom tool every time I switche from one solution to the other, I created this tool to automatically run the custom tools so I don't have to search for each files and run the custom tool manually.
+I created this because I am working on a multiple solution that share the same project that will build different platforms, .NET 2.0, .NET4.0 and UWP. This project contains some files that uses custom tool to generate another file. Every platform has their own version of the custom tool and it generates different output. So to prevent me from running the custom tool every time I switch from one solution to the other, I created this tool to automatically run the custom tools so I don't have to search for each files and run the custom tool manually.
 
 # RunCustomToolOnBuild
 ![alt text](https://github.com/lancecontreras/RunCustomToolOnBuild/blob/master/RunTool.png)
