@@ -1,11 +1,12 @@
+# Background
+I created this because I am working on a multiple solution that share the same project that will build multiple platforms, which is .NET 2.0, .NET4 and UWP. This project contains some files that uses custom tool to generate another file. Every platform has their own version of the custom tool and it generates different output. So to prevent me from running the custom tool every time I switche from one solution to the other, I created this tool to automatically run the custom tools so I don't have to search for each files and run the custom tool manually.
+
 # RunCustomToolOnBuild
 ![alt text](https://github.com/lancecontreras/RunCustomToolOnBuild/blob/master/RunTool.png)
 
-This is a visual studio 2015 extension that will allow the custom tool on every project item to run during build so that there's no need to run/save each custom tools manually. This can be very helpful on projects that are using resource(resx) and TextTemplate (tt) files.
+RunCustomtoolOnBuild is a visual studio extension that tries to run the custom tools associated to project files on build. If you're working on a project that uses custom tool to generate a file (i.e. resx, resw and tt), this tool will run those custom tool automatically if it feels that the generated file is not updated. That it saves you time from running custom tool on each files.
 
-I also give credit to [thomaslevesque](https://github.com/thomaslevesque), author of [AutoRunCustomTool](https://github.com/thomaslevesque/AutoRunCustomTool) where I got most of the codes here.
-
-Background : I created this because I am working on a project that will run in multiple platforms, which is .NET 2.0, .NET4 and UWP. I am sharing a resource file across those projects and each project has their own way or version of custom tool which gives me different output when i ran them individually. Whenever I will switch from working on one project to another, I have to run each custom tools on every TT and resource files in each projects. This tool saved me from that effort.
+Credits to [thomaslevesque](https://github.com/thomaslevesque), author of [AutoRunCustomTool](https://github.com/thomaslevesque/AutoRunCustomTool) where I got most of the codes from.
 
 ## How to Use:
 
