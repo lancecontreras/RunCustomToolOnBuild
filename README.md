@@ -16,3 +16,7 @@ Background : I created this because I am working on a project that will run in m
 4. Build the project/solution.
 
 ## Download from [Visual Studio Gallery](https://marketplace.visualstudio.com/items?itemName=LanceContreras.RunCustomToolOnBuild)
+1. In Visual Studio click on the Tools>Extensions and Updates menu.
+2. On the left pane, click on "Online"
+3. Then on the right pane search for "RunCustomToolOnBuild"
+4. Then click download on RunCustomToolOnBuild
