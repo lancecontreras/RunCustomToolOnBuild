@@ -27,19 +27,18 @@ namespace RunCustomToolOnBuild
   public sealed class RunCustomToolPackage : Package
   {
     /// <summary>
-    /// RunCustomToolPackage GUID string.
+    ///   RunCustomToolPackage GUID string.
     /// </summary>
     public const string PackageGuidString = "f9a70f0c-cb6b-4c22-9e9f-ce86369d191e";
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RunCustomToolPackage"/> class.
+    ///   Initializes a new instance of the <see cref="RunCustomToolPackage" /> class.
     /// </summary>
     public RunCustomToolPackage()
     {
-      // Inside this method you can place any initialization code that does not require
-      // any Visual Studio service because at this point the package object is created but
-      // not sited yet inside Visual Studio environment. The place to do all the other
-      // initialization is the Initialize method.
+      // Inside this method you can place any initialization code that does not require any Visual
+      // Studio service because at this point the package object is created but not sited yet inside
+      // Visual Studio environment. The place to do all the other initialization is the Initialize method.
     }
 
     private DocumentEvents _documentEvents;
@@ -48,7 +47,9 @@ namespace RunCustomToolOnBuild
     private OutputWindowPane _outputPane;
     private ErrorListProvider _errorListProvider;
     private readonly Dictionary<int, IExtenderProvider> _registerExtenderProviders = new Dictionary<int, IExtenderProvider>();
-    public const string TargetsPropertyName = "RunCustomToolOnBuild";
+    public const string Property_RunCustomToolOnBuild = "RunCustomToolOnBuild";
+    public const string Property_AlwaysRun = "AlwaysRun";
+    public const string Property_ReferenceFile = "ReferenceFile";
     public const string LastBuiltOnPropertyName = "LastBuiltOnSolution";
 
     protected override void Initialize()
@@ -75,7 +76,7 @@ namespace RunCustomToolOnBuild
       RegisterExtenderProvider();
     }
 
-    void RegisterExtenderProvider()
+    private void RegisterExtenderProvider()
     {
       var provider = new PropertyExtenderProvider(_dte, this);
       string name = PropertyExtenderProvider.ExtenderName;
@@ -83,7 +84,7 @@ namespace RunCustomToolOnBuild
       RegisterExtenderProvider(VSConstants.CATID.VBFileProperties_string, name, provider);
     }
 
-    void RegisterExtenderProvider(string extenderCatId, string name, IExtenderProvider extenderProvider)
+    private void RegisterExtenderProvider(string extenderCatId, string name, IExtenderProvider extenderProvider)
     {
       int cookie = _dte.ObjectExtenders.RegisterExtenderProvider(extenderCatId, name, extenderProvider);
       _registerExtenderProviders.Add(cookie, extenderProvider);
@@ -103,7 +104,7 @@ namespace RunCustomToolOnBuild
           }
           else
           {
-            //If there's no selected project, try the whole solution 
+            //If there's no selected project, try the whole solution
             foreach (Project project in _dte.Solution.Projects)
             {
               if (project != null && project.ProjectItems != null)
@@ -131,7 +132,8 @@ namespace RunCustomToolOnBuild
         LogActivity(ex.ToString());
       }
     }
-    Project GetCurrentProject()
+
+    private Project GetCurrentProject()
     {
       IntPtr hierarchyPointer, selectionContainerPointer;
       Object selectedObject = null;
@@ -163,13 +165,20 @@ namespace RunCustomToolOnBuild
       return selectedProject;
     }
 
+    private string GetActiveConfiguration()
+    {
+      string activeConfiguration = _dte.DTE.Solution.SolutionBuild.ActiveConfiguration.Name;
+      return activeConfiguration;
+    }
+
     #region RCT
-    bool WillRunCustomToolOnBuild(ProjectItem projectItem)
+
+    private bool WillRunCustomToolOnBuild(ProjectItem projectItem)
     {
       IVsSolution solution = (IVsSolution)GetGlobalService(typeof(SVsSolution));
       IVsHierarchy project;
       solution.GetProjectOfUniqueName(projectItem.ContainingProject.UniqueName, out project);
-      string docFullPath = projectItem.GetPath(); 
+      string docFullPath = projectItem.GetPath();
 
       if (docFullPath == null) return false;
       string customTool = projectItem.GetValue("CustomTool") as string;
@@ -183,40 +192,58 @@ namespace RunCustomToolOnBuild
         if (project.ParseCanonicalName(docFullPath, out itemId) != 0)
           return false;
 
-        string runCustomToolOnBuildPropertyValue;
-        if (storage.GetItemAttribute(itemId, TargetsPropertyName, out runCustomToolOnBuildPropertyValue) != 0)
-          return false;
+        bool? isRunCustomTool = storage.GetBoolean(itemId, Property_RunCustomToolOnBuild);
+        bool? isAlwaysRun = storage.GetBoolean(itemId, Property_AlwaysRun);
+        string referenceFile = storage.GetString(itemId, Property_ReferenceFile);
+        List<string> referenceFiles = null;
 
-        if (runCustomToolOnBuildPropertyValue == null)
-          return false;
+        if (Path.GetExtension(docFullPath) == ".tt") //If it's a T4 file we query the reference assemblies.
+          referenceFiles = ExtensionHelper.GetReferenceAssemblies(docFullPath);
 
-        bool runOnBuild;
-        if (bool.TryParse(runCustomToolOnBuildPropertyValue, out runOnBuild) && runOnBuild)
+        if (isRunCustomTool.HasValue && isRunCustomTool.Value)
         {
-          string lastBuiltOn = projectItem.GetLastSolution();          
+          if (isAlwaysRun.HasValue && isAlwaysRun.Value)
+            return true;
 
           // Get the solution file name
           string solDir, solFile, solOpts;
           solution.GetSolutionInfo(out solDir, out solFile, out solOpts);
 
-          if (lastBuiltOn == solFile) //in the same solution
+          string lastBuiltIn = projectItem.GetLastSolution();
+
+          if (lastBuiltIn == solFile) //in the same solution
           {
             if (projectItem.HasChild())
             {
               string generatedItemFileName = projectItem.GetGeneratedItem().GetPath();
-
-              // File is not empty and file is updated, it's already generated.
-              if (!ExtensionHelper.IsFileEmpty(generatedItemFileName) && projectItem.IsGeneratedFileUpdated()) return false;
+              if (!ExtensionHelper.IsFileEmpty(generatedItemFileName) &&
+                IsGeneratedFileUpdated(projectItem, referenceFiles, solDir, GetActiveConfiguration())) return false;
             }
           }
           else
             projectItem.SetLastSolution(solFile);
-          return runOnBuild;
-        }                    
+
+          return true;
+        }
       }
       return false;
     }
-    void CheckProjectItems(ProjectItem projectItem)
+
+    private bool IsGeneratedFileUpdated(ProjectItem projectItem, List<string> referenceFiles, string solutionDir, string activeConfiguration)
+    {
+      foreach (string fileName in referenceFiles)
+      {
+        string referenceFileName = fileName.Replace("$(SolutionDir)", solutionDir).Replace("$(Configuration)", activeConfiguration);
+        if (File.Exists(referenceFileName))
+        {
+          if (!projectItem.IsGeneratedFileUpdated(referenceFileName))
+            return false;
+        }
+      }
+      return true;
+    }
+
+    private void CheckProjectItems(ProjectItem projectItem)
     {
       if (WillRunCustomToolOnBuild(projectItem))
       {
@@ -230,7 +257,7 @@ namespace RunCustomToolOnBuild
       }
     }
 
-    void RunCustomTool(ProjectItem projectItem)
+    private void RunCustomTool(ProjectItem projectItem)
     {
       IVsSolution solution = (IVsSolution)GetGlobalService(typeof(SVsSolution));
       IVsHierarchy project;
@@ -250,9 +277,11 @@ namespace RunCustomToolOnBuild
         LogError(project, projectItem.Document.Name, $"Failed to Run Custom Tool on {projectItem.Name}");
       }
     }
-    #endregion 
 
-    #region Log 
+    #endregion RCT
+
+    #region Log
+
     private void LogActivity(string format, params object[] args)
     {
       string prefix = $"[{DateTime.Now.ToString("M/d/y h:mm:ss.FFF", CultureInfo.InvariantCulture)} RunCustomToolOnBuild] {format}";
@@ -291,13 +320,14 @@ namespace RunCustomToolOnBuild
         case TaskErrorCategory.Error:
           prefix = "[!";
           break;
+
         case TaskErrorCategory.Warning:
           prefix = "[*: ";
           break;
       }
       _outputPane.OutputString(prefix + text + Environment.NewLine);
     }
-    #endregion 
 
+    #endregion Log
   }
 }

@@ -77,6 +77,8 @@
     <Compile Include="PropertyExtender.cs" />
     <Compile Include="PropertyExtenderProvider.cs" />
     <Compile Include="RunCustomToolPackage.cs" />
+    <Compile Include="StorageExtension.cs" />
+    <Compile Include="WildCard.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

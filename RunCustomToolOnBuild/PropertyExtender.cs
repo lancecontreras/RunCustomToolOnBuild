@@ -45,18 +45,34 @@ namespace RunCustomToolOnBuild
     {
       get
       {
-        return LoadRunCustomToolOn();
+        return GetBoolValue(RunCustomToolPackage.Property_RunCustomToolOnBuild);
       }
       set
       {
-        SaveRunCustomToolOn(value);
+        SetBoolValue(value, RunCustomToolPackage.Property_RunCustomToolOnBuild);
       }
     }
 
-    private bool LoadRunCustomToolOn()
+    [Category("Run Custom Tool")]
+    [DisplayName("Always Run")]
+    [Description("Always run the custom tool")]
+    [Editor("System.ComponentModel.Design.BinaryEditor, System.Design, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a", typeof(UITypeEditor))]
+    public bool AlwaysRun
+    {
+      get
+      {
+        return GetBoolValue(RunCustomToolPackage.Property_AlwaysRun);
+      }
+      set
+      {
+        SetBoolValue(value, RunCustomToolPackage.Property_AlwaysRun);
+      }
+    }
+
+    private bool GetBoolValue(string propertyName)
     {
       string s;
-      _storage.GetItemAttribute(_itemId, RunCustomToolPackage.TargetsPropertyName, out s);
+      _storage.GetItemAttribute(_itemId, propertyName, out s);
       if (s != null)
       {
         bool bValue;
@@ -66,9 +82,9 @@ namespace RunCustomToolOnBuild
       return false;
     }
 
-    private void SaveRunCustomToolOn(bool WillRunCustomTool)
+    private void SetBoolValue(bool WillRunCustomTool, string propertyName)
     {
-      _storage.SetItemAttribute(_itemId, RunCustomToolPackage.TargetsPropertyName, WillRunCustomTool.ToString());
+      _storage.SetItemAttribute(_itemId, propertyName, WillRunCustomTool.ToString());
     }
   }
 }
