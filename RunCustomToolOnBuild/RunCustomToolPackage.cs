@@ -194,7 +194,6 @@ namespace RunCustomToolOnBuild
 
         bool? isRunCustomTool = storage.GetBoolean(itemId, Property_RunCustomToolOnBuild);
         bool? isAlwaysRun = storage.GetBoolean(itemId, Property_AlwaysRun);
-        string referenceFile = storage.GetString(itemId, Property_ReferenceFile);
         List<string> referenceFiles = null;
 
         if (Path.GetExtension(docFullPath) == ".tt") //If it's a T4 file we query the reference assemblies.
@@ -210,18 +209,19 @@ namespace RunCustomToolOnBuild
           solution.GetSolutionInfo(out solDir, out solFile, out solOpts);
 
           string lastBuiltIn = projectItem.GetLastSolution();
-
-          if (lastBuiltIn == solFile) //in the same solution
+          string lastConfigurationBuild = projectItem.GetLastConfiguration();
+          string activeConfiguration = GetActiveConfiguration();
+          if (lastBuiltIn == solFile && lastConfigurationBuild == activeConfiguration) //in the same solution
           {
             if (projectItem.HasChild())
             {
               string generatedItemFileName = projectItem.GetGeneratedItem().GetPath();
               if (!ExtensionHelper.IsFileEmpty(generatedItemFileName) &&
-                IsGeneratedFileUpdated(projectItem, referenceFiles, solDir, GetActiveConfiguration())) return false;
+                IsGeneratedFileUpdated(projectItem, referenceFiles, solDir, activeConfiguration)) return false;
             }
           }
           else
-            projectItem.SetLastSolution(solFile);
+            projectItem.UpdateLastBuild(solFile, activeConfiguration);
 
           return true;
         }

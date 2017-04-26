@@ -104,6 +104,23 @@ namespace RunCustomToolOnBuild
       return lastSolution;
     }
 
+    internal static string GetLastConfiguration(this ProjectItem projectItem)
+    {
+      string lastConfiguration = string.Empty;
+      if (projectItem.HasSettings())
+      {
+        string fileName = projectItem.GetSettingsFileName();
+        if (!IsFileEmpty(fileName))
+        {
+          string[] lines = File.ReadAllLines(fileName);
+          if (lines.Length > 1)
+            lastConfiguration = lines[1];
+        }
+      }
+
+      return lastConfiguration;
+    }
+
     internal static DateTime GetLastModified(this ProjectItem projectItem)
     {
       return File.GetLastWriteTime(projectItem.GetPath());
@@ -134,12 +151,15 @@ namespace RunCustomToolOnBuild
       return isNewerThanParent && isNewerThanReferenceFile;
     }
 
-    internal static void SetLastSolution(this ProjectItem projectItem, string lastSolution)
+    internal static void UpdateLastBuild(this ProjectItem projectItem, string lastSolution, string configuration)
     {
       string fileName = projectItem.GetSettingsFileName();
       if (projectItem.HasSettings())
         File.Delete(fileName);
-      File.WriteAllText(fileName, lastSolution);
+
+      string content = string.Format("{0}\n{1}", lastSolution, configuration);
+
+      File.WriteAllText(fileName, content);
       File.SetAttributes(fileName, FileAttributes.Hidden | FileAttributes.Archive);
     }
 
@@ -168,20 +188,6 @@ namespace RunCustomToolOnBuild
         }
       }
       return referenceLines;
-    }
-
-    public static bool IsGeneratedFileUpdated(this ProjectItem projectItem, List<string> referenceFiles, string solutionDir, string activeConfiguration)
-    {
-      foreach (string fileName in referenceFiles)
-      {
-        string referenceFileName = fileName.Replace("$(SolutionDir)", solutionDir).Replace("$(Configuration)", activeConfiguration);
-        if (File.Exists(referenceFileName))
-        {
-          if (!projectItem.IsGeneratedFileUpdated(referenceFileName))
-            return false;
-        }
-      }
-      return true;
     }
   }
 }
