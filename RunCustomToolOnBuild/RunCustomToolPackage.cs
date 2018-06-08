@@ -194,7 +194,7 @@ namespace RunCustomToolOnBuild
 
         bool? isRunCustomTool = storage.GetBoolean(itemId, Property_RunCustomToolOnBuild);
         bool? isAlwaysRun = storage.GetBoolean(itemId, Property_AlwaysRun);
-        List<string> referenceFiles = null;
+        List<string> referenceFiles = new List<string>();
 
         if (Path.GetExtension(docFullPath) == ".tt") //If it's a T4 file we query the reference assemblies.
           referenceFiles = ExtensionHelper.GetReferenceAssemblies(docFullPath);
@@ -215,6 +215,7 @@ namespace RunCustomToolOnBuild
           {
             if (projectItem.HasChild())
             {
+                   
               string generatedItemFileName = projectItem.GetGeneratedItem().GetPath();
               if (!ExtensionHelper.IsFileEmpty(generatedItemFileName) &&
                 IsGeneratedFileUpdated(projectItem, referenceFiles, solDir, activeConfiguration)) return false;
@@ -231,14 +232,16 @@ namespace RunCustomToolOnBuild
 
     private bool IsGeneratedFileUpdated(ProjectItem projectItem, List<string> referenceFiles, string solutionDir, string activeConfiguration)
     {
+      if (referenceFiles == null) return true;
       foreach (string fileName in referenceFiles)
       {
         string referenceFileName = fileName.Replace("$(SolutionDir)", solutionDir).Replace("$(Configuration)", activeConfiguration);
-        if (File.Exists(referenceFileName))
-        {
-          if (!projectItem.IsGeneratedFileUpdated(referenceFileName))
-            return false;
-        }
+        
+        // These are the assemblies referenced by path. Make sure it exist so there will be no error when we run custom tool. 
+        if (referenceFileName.Contains(@":\") && !File.Exists(referenceFileName)) continue;
+
+        // Check if the generated file is not new. We return false to allow the custom tool to run.
+        if (!projectItem.IsGeneratedFileUpdated(referenceFileName)) return false;
       }
       return true;
     }

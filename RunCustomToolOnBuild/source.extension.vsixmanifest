@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="RunCustomToolOnBuild.Lawrence Contreras.a48499ce-ff8d-4bc1-bc4a-3dfb59e85367" Version="1.8" Language="en-US" Publisher="Lawrence Contreras" />
+        <Identity Id="RunCustomToolOnBuild.Lawrence Contreras.a48499ce-ff8d-4bc1-bc4a-3dfb59e85367" Version="1.9" Language="en-US" Publisher="Lawrence Contreras" />
         <DisplayName>RunCustomToolOnBuild</DisplayName>
         <Description xml:space="preserve">Now compatible with visual Studio 2017 !
 RunCustomtoolOnBuild is a visual studio extension that tries to run the custom tools of project files on build.

@@ -28,7 +28,12 @@ namespace RunCustomToolOnBuild
     {
       foreach (ProjectItem item in projectItem.GetChildren())
       {
-        if (Path.GetFileNameWithoutExtension(item.GetPath()).Equals(Path.GetFileNameWithoutExtension(projectItem.GetPath())))
+        string filenameWithoutExt = Path.GetFileNameWithoutExtension(item.GetPath());
+
+        while (filenameWithoutExt.Contains(".")) // This should solve the .designer.cs files.
+          filenameWithoutExt = Path.GetFileNameWithoutExtension(filenameWithoutExt); 
+
+        if (filenameWithoutExt.Equals(Path.GetFileNameWithoutExtension(projectItem.GetPath())))
           return item;
       }
       return null;
